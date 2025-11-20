@@ -1,4 +1,116 @@
 # Premier League 19-20 Data Analysis & Visualization
 
 ## Setting up environment
+```R
+library(tidyverse)
+```
+```R
+library(readxl)
+library(GGally)
+library(gridExtra)
+```
+```R
+library(DT)
+library(ggimage)
+premierLeague <- read_excel("premierLeague.xlsx")
+datatable(premierLeague)
+```
+## Correlation
+```R
+ggcorr(premierLeague %>%
+         select_if(is.numeric) %>% 
+                     select(-Penalties),label = TRUE, digits = 1,low = "khaki", high = "seagreen")
+```
+## Number of Managers and Captains
+```R
+p1 <- premierLeague %>% 
+  group_by(Team) %>% 
+  summarise(Manager = length(unique(Manager))) %>% 
+  ungroup() %>% 
+  arrange(-Manager) %>% 
+  mutate(Cat = case_when(
+    Manager == 1 ~ "1",
+    Manager == 2 ~ "2",
+    Manager == 3 ~ "3",
+    Manager > 3 ~ "4+"
+  )) %>% 
+  ggplot(aes(reorder(Team, Manager), Manager, fill = Cat))+
+  geom_col()+
+  coord_flip()+
+  labs(x = NULL, x = NULL, fill = "Number of Managers", title = "Number of Managers")+
+  theme(
+    panel.background = element_rect(fill = "darkgray"),
+    plot.background = element_rect(fill = "darkgray", color = "darkgray"),
+    legend.background = element_rect(fill = "darkgray"),
+    legend.key = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    legend.position = "buttom",
+    plot.title = element_text(size = 20, face = "bold", hjust = 0.5, color = "darkslategray")
+  )+
+  scale_fill_manual(values = c("white", "steelblue", "seagreen", "firebrick"))
 
+p2 <- premierLeague %>%
+  group_by(Team) %>% 
+  summarize(Captain = length(unique(Captain))) %>% 
+  ungroup() %>% 
+  arrange(-Captain) %>% 
+  ggplot(aes(reorder(Team, Captain), Captain, fill = Captain))+
+  geom_col(show.legend = FALSE)+
+  coord_flip()+
+  labs(x = NULL, y = NULL, title = "Number of Captains")+
+  scale_fill_gradient(low = "khaki", high = "navy")+
+  theme(
+    panel.background = element_rect(fill = "darkgray"),
+    plot.background = element_rect(fill = "darkgray", color = "darkgray"),
+    legend.background = element_rect(fill = "darkgray"),
+    legend.key = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    legend.position = "buttom",
+    plot.title = element_text(size = 20, face = "bold", hjust = 0.5, color = "darkslategray")
+  )
+p1
+p2
+```
+
+## Discipline
+```R
+discipline <- premierLeague %>% 
+  select(Team, Fouls, YellowCard, RedCard, YellowRed) %>% 
+  group_by(Team) %>% 
+  summarise_at(vars(Fouls, YellowCard:YellowRed), funs(sum)) %>% 
+  arrange(Fouls) %>% 
+  mutate(Disqualifed = RedCard+YellowRed)
+
+disp2 <- discipline %>% 
+  arrange(Disqualifed) %>% 
+  filter(Team %in% c("Chelsea", "Manchester United", "Burnley", "Liverpool", "Arsenal", "Southampton", "Manchester City", "Watford"))
+
+ggplot(discipline, aes(x = Fouls, YellowCard, color = Disqualifed, size = Disqualifed))+
+  geom_point()+
+  geom_text(disp2, mapping = aes(Fouls, YellowCard, label = Team), size = 4, vjust = -1.1)+
+  guides(size=FALSE)+
+  scale_color_gradient(high = "red", "low" = "yellow")+
+  theme_classic()+
+  theme(
+    # Background
+    plot.background = element_rect(fill = "black", color = "black"),
+    panel.background = element_rect(fill = "black"),
+    legend.background = element_rect(fill = "black"),
+    # Position
+    legend.position = "bottom",
+    legend.key.width=unit(1.5,"cm"),
+    # Text
+    axis.title = element_text(color = "cornsilk", size = 20),
+    axis.text = element_text(color = "cornsilk", size = 12),
+    legend.text = element_text(color = "cornsilk"),
+    legend.title = element_text(color = "cornsilk", vjust = 0.95, size = 15),
+    # Line
+    axis.line = element_line(color = "gray"),
+    # Title
+    plot.title = element_text(hjust = .5, color = "cornsilk", size = 20, face = "bold")
+  )+
+  ylim(10,100)+
+  labs(y = "Yellow Card", color = "Kicked", title = "Premier League Discipline Graph")
+```
