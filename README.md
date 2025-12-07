@@ -114,3 +114,73 @@ ggplot(discipline, aes(x = Fouls, YellowCard, color = Disqualifed, size = Disqua
   ylim(10,100)+
   labs(y = "Yellow Card", color = "Kicked", title = "Premier League Discipline Graph")
 ```
+
+## Who is Better at Scoring?
+```R
+premierLeague %>% 
+  select(Team_Logo, Team, Score, Offsides) %>% 
+  group_by(Team_Logo, Team) %>% 
+  summarise_at(vars(Score, Offsides), funs(sum)) %>% 
+  arrange(Offsides) %>% 
+  ggplot(aes(Offsides, Score))+
+  geom_image(aes(image = Team_Logo), size = 0.06)+
+  coord_flip()+
+  theme_minimal()+
+  theme(
+    # Background
+    plot.background = element_rect(fill = "lightgray"),
+    panel.background = element_rect(fill = "white"),
+    # Title
+    plot.title = element_text(size = 20, face = "bold"),
+    # Text
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 12)
+  )+
+  labs(y = "Total Goal", title = "Who is Better at Scoring?")
+```
+
+## Who are Successful Managers
+```R
+teams <- premierLeague %>% 
+  group_by(Team) %>% 
+  summarise(L = length(unique(Manager))) %>% 
+  ungroup() %>% 
+  filter(L == 1) %>% pull(Team)
+
+premierLeague %>% 
+  filter(Team %in% teams) %>% 
+  group_by(Manager, Team) %>% 
+  summarise(Score = sum(Score), ShotsAccuracy = mean(ShotsAccuracy)) %>% 
+  ungroup() %>% 
+  ggplot(aes(Score, ShotsAccuracy, label = paste0(Manager, " (", Team, ")")))+
+  geom_rect(aes(xmin = 20, xmax = 52.53, ymin = 0.275, ymax = 0.3322), fill = "orangered")+
+  geom_rect(aes(xmin = 52.53, xmax = 110, ymin = 0.3322, ymax = 0.4), fill = "seagreen")+
+  geom_hline(aes(yintercept = 0.3322), color = "cornsilk")+
+  geom_vline(aes(xintercept = 52.53), color = "cornsilk")+
+  geom_point(aes(x = 52.53, y = 0.3322), size = 4, color = "khaki")+
+  geom_text(aes(x = 56, y = 0.335, label = "Season Average"), color = "khaki")+
+  geom_text(vjust = -0.6, color = "white", size = 3)+
+  geom_jitter(alpha = 0.4, color = "white")+
+  xlim(20, 110)+ylim(0.275,0.4)+
+  labs(y = "Average Shot Accuracy", title = "Who are successful managers?")+
+  scale_y_continuous(labels = scales::percent)+
+  theme_classic()+
+  theme(
+    # Background
+    plot.background = element_rect(fill = "black", color = "black"),
+    panel.background = element_rect(fill = "black"),
+    legend.background = element_rect(fill = "black"),
+    # Position
+    legend.position = "bottom",
+    legend.key.width = unit(1.5,"cm"),
+    # Text
+    axis.title = element_text(color = "cornsilk", size = 20),
+    axis.text = element_text(color = "cornsilk", size = 12),
+    legend.text = element_text(color = "cornsilk"),
+    legend.title = element_text(color = "cornsilk", vjust = 0.95, size = 15),
+    # Line
+    axis.line = element_line(color = "gray"),
+    # Title
+    plot.title = element_text(hjust = .5, color = "cornsilk", size = 20, face = "bold")
+  )
+```
