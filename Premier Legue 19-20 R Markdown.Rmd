@@ -117,3 +117,28 @@ ggplot(discipline, aes(x = Fouls, YellowCard, color = Disqualifed, size = Disqua
   labs(y = "Yellow Card", color = "Kicked", title = "Premier League Discipline Graph")
 
 ```
+
+# Who is better at scoring
+```{r Who is Better at Scoring?}
+premierLeague %>% 
+  select(Team_Logo, Team, Score, Offsides) %>% 
+  group_by(Team_Logo, Team) %>% 
+  summarise_at(vars(Score, Offsides), funs(sum)) %>% 
+  arrange(Offsides) %>% 
+  ggplot(aes(Offsides, Score))+
+  geom_image(aes(image = Team_Logo), size = 0.06)+
+  coord_flip()+
+  theme_minimal()+
+  theme(
+    # Background
+    plot.background = element_rect(fill = "lightgray"),
+    panel.background = element_rect(fill = "white"),
+    # Title
+    plot.title = element_text(size = 20, face = "bold"),
+    # Text
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 12)
+  )+
+  labs(y = "Total Goal", title = "Who is Better at Scoring?")
+
+```
