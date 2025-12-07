@@ -87,7 +87,7 @@ discipline <- premierLeague %>%
 
 disp2 <- discipline %>% 
   arrange(Disqualifed) %>% 
-  filter(Team %in% c("Chelsea", "Manchester United", "Burnley", "Liverpool", "Arsenal", "Southhampton", "Manchester City", "Watford"))
+  filter(Team %in% c("Chelsea", "Manchester United", "Burnley", "Liverpool", "Arsenal", "Southampton", "Manchester City", "Watford"))
 
 ggplot(discipline, aes(x = Fouls, YellowCard, color = Disqualifed, size = Disqualifed))+
   geom_point()+
@@ -188,3 +188,4 @@ premierLeague %>%
     plot.title = element_text(hjust = .5, color = "cornsilk", size = 20, face = "bold")
   )
 ```
+
